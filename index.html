@@ -1,0 +1,226 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>QuizMaster Pro</title>
+<style>
+:root{--bg:#f4f6fb;--cd:#fff;--tx:#1d2433;--mu:#6b7488;--pr:#5b5bf0;--ok:#16a34a;--bad:#dc2626;--bd:#e3e7f0}
+[data-theme=dark]{--bg:#0f1320;--cd:#181d2e;--tx:#e8ebf5;--mu:#95a0b8;--pr:#8080ff;--ok:#22c55e;--bad:#f87171;--bd:#2a3150}
+*{box-sizing:border-box}body{margin:0;font:16px system-ui,sans-serif;background:var(--bg);color:var(--tx)}
+header,main{max-width:720px;margin:auto;padding:14px}header{display:flex;justify-content:space-between;align-items:center}h1{font-size:21px;margin:0}
+.card{background:var(--cd);border:1px solid var(--bd);border-radius:16px;padding:20px;margin-bottom:14px}
+label{display:block;font-size:13px;color:var(--mu);margin:10px 0 4px}
+input,select,textarea,button{font:inherit;color:inherit}
+input,select,textarea{width:100%;padding:9px;border-radius:10px;border:1px solid var(--bd);background:var(--bg)}
+button{cursor:pointer;border:0;border-radius:10px;padding:9px 14px;background:var(--pr);color:#fff;font-weight:600}
+button.g{background:none;color:var(--tx);border:1px solid var(--bd)}button:disabled{opacity:.4;cursor:default}
+.big{width:100%;margin-top:14px;padding:12px}.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}.hide{display:none!important}
+.top{display:flex;justify-content:space-between;font-size:14px;color:var(--mu);margin-bottom:8px}
+.bar{height:8px;background:var(--bd);border-radius:8px;overflow:hidden;margin-bottom:6px}.bar i{display:block;height:100%;background:var(--pr);transition:width .3s}
+.q{font-size:20px;font-weight:600;margin:14px 0}
+.opt{display:block;width:100%;text-align:left;background:var(--bg);color:var(--tx);border:2px solid var(--bd);margin-bottom:9px;padding:12px}
+.opt:hover:not(:disabled){border-color:var(--pr)}.opt.ok{border-color:var(--ok);background:#16a34a22}.opt.bad{border-color:var(--bad);background:#dc262622}
+kbd{background:var(--bd);border-radius:5px;padding:1px 7px;margin-right:8px;font-size:12px}
+.exp{padding:10px;border-radius:10px;background:var(--bg);border-left:4px solid var(--pr);margin-top:8px;font-size:14px}
+.sc{font-size:52px;font-weight:800;text-align:center;color:var(--pr)}.c{text-align:center;color:var(--mu)}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:7px;border-bottom:1px solid var(--bd);text-align:left}
+.st{display:flex;gap:8px}.st div{flex:1;text-align:center;background:var(--bg);border-radius:12px;padding:9px;font-size:13px}.st b{display:block;font-size:20px}
+.bdg{display:inline-block;margin:4px;padding:6px 10px;border-radius:99px;background:var(--bg);border:1px solid var(--bd);font-size:13px}.bdg.off{opacity:.35}
+.rv{padding:8px 0;border-bottom:1px solid var(--bd);font-size:14px}
+</style></head><body>
+<header><h1>🧠 QuizMaster Pro</h1><div class="row" style="flex:none"><button class="g" id="stB">📊</button><button class="g" id="adB">⚙</button><button class="g" id="snB">🔊</button><button class="g" id="thB">🌓</button></div></header>
+<main>
+<section id="home"><div class="card">
+ <label>Your name</label><input id="name" maxlength="20" placeholder="Player">
+ <label>Mode</label><select id="mode"><option value="normal">Normal quiz</option><option value="daily">📅 Daily challenge</option><option value="practice">🔁 Practice my mistakes</option></select>
+ <div id="flt"><div class="row"><div><label>Category</label><select id="cat"></select></div><div><label>Difficulty</label><select id="diff"><option value="">Any</option><option>Easy</option><option>Medium</option><option>Hard</option></select></div></div>
+ <div class="row"><div><label>Questions</label><select id="count"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></div><div><label>Seconds per question</label><select id="time"><option value="0">No timer</option><option>15</option><option selected>20</option><option>30</option></select></div></div></div>
+ <button class="big" id="start">Start Quiz</button><p class="c" id="avail"></p></div>
+ <div class="card"><b>🏆 Leaderboard</b><table id="lb"></table></div></section>
+
+<section id="quiz" class="hide"><div class="card">
+ <div class="top"><span id="prog"></span><span id="strk"></span><span id="score"></span></div>
+ <div class="bar"><i id="pb"></i></div><div class="bar" id="tb"><i></i></div>
+ <div class="q" id="qt"></div><div id="opts"></div>
+ <div class="row" style="margin-top:6px"><button class="g" id="f5">✂ 50/50</button><button class="g" id="sk">⏭ Skip</button></div>
+ <div id="exp"></div><button class="big hide" id="next">Next →</button></div></section>
+
+<section id="result" class="hide"><div class="card">
+ <div class="sc" id="rs"></div><p class="c" id="rm"></p><div id="rbdg" class="c"></div>
+ <div class="st"><div><b id="rc"></b>Correct</div><div><b id="rw"></b>Wrong</div><div><b id="rb"></b>Best streak</div><div><b id="ra"></b>Avg sec</div></div>
+ <div class="row" style="margin-top:14px"><button id="again">Play again</button><button class="g" id="h2">Home</button><button class="g" id="cp">Copy result</button></div></div>
+ <div class="card"><b>Review</b><div id="review"></div></div></section>
+
+<section id="stats" class="hide"><div class="card"><b>📊 Your stats</b><div id="sbody"></div>
+ <div class="row" style="margin-top:14px"><button class="g" id="sBack">← Back</button><button class="g" id="sRes">Reset stats</button></div></div></section>
+
+<section id="admin" class="hide"><div class="card"><b>Add your own question</b>
+ <label>Question</label><textarea id="aq" rows="2"></textarea><label>Options (select the correct one)</label><div id="aopts"></div>
+ <div class="row"><div><label>Category</label><input id="acat" placeholder="e.g. Movies"></div><div><label>Difficulty</label><select id="adiff"><option>Easy</option><option>Medium</option><option>Hard</option></select></div></div>
+ <label>Explanation (optional)</label><input id="aexp"><button class="big" id="aadd">Add question</button></div>
+ <div class="card"><b>Custom questions: <span id="cc">0</span></b><div class="row" style="margin-top:10px"><button class="g" id="ex">Export JSON</button><button class="g" id="clc">Delete custom</button><button class="g" id="cll">Clear scores</button></div></div>
+ <button class="g" id="aBack">← Back</button></section>
+</main>
+<script>
+const D={E:"Easy",M:"Medium",H:"Hard"},B=[];
+const add=(c,L)=>L.forEach(([d,q,o,k,e])=>B.push({c,d:D[d],q,o:o.split("|"),a:k,e}));
+add("Science",[
+["E","Which planet is the Red Planet?","Venus|Mars|Jupiter|Mercury",1,"Iron oxide dust makes Mars look red."],
+["E","Plants absorb which gas for photosynthesis?","Oxygen|Nitrogen|Carbon dioxide|Helium",2,"They turn CO₂ and light into sugar."],
+["M","Chemical symbol for gold?","Go|Gd|Ag|Au",3,"Au comes from Latin 'aurum'."],
+["M","Bones in an adult human body?","186|206|226|256",1,"Babies have ~300; many fuse."],
+["M","Water boils at what °C at sea level?","90|100|110|120",1,"100°C (212°F)."],
+["H","Speed of light (approx.)?","300,000 km/s|150,000 km/s|3,000 km/s|30,000 km/s",0,"About 299,792 km/s in a vacuum."],
+["H","Powerhouse of the cell?","Nucleus|Ribosome|Mitochondria|Golgi body",2,"Mitochondria produce most of the cell's ATP."]]);
+add("Technology",[
+["E","HTML stands for?","HyperText Markup Language|High Tech Modern Language|HyperTransfer Markup Logic|Home Tool Markup Language",0,"It structures web pages."],
+["E","Which company created Android?","Apple|Microsoft|Google|Nokia",2,"Google bought Android Inc. in 2005."],
+["M","CPU stands for?","Central Process Unit|Central Processing Unit|Computer Personal Unit|Core Program Utility",1,"It runs program instructions."],
+["M","Which language styles web pages?","Python|Java|CSS|SQL",2,"CSS controls layout, color and fonts."],
+["M","Which is NOT a programming language?","Python|Ruby|HTTP|Rust",2,"HTTP is a protocol."],
+["H","Time complexity of binary search?","O(n)|O(log n)|O(n log n)|O(1)",1,"Each step halves the search space."],
+["H","Which Git command records changes locally?","push|commit|fetch|clone",1,"commit saves a snapshot to your local repo."]]);
+add("Geography",[
+["E","Capital of Japan?","Osaka|Kyoto|Tokyo|Seoul",2,"Tokyo has been the capital since 1868."],
+["E","Largest ocean?","Atlantic|Indian|Arctic|Pacific",3,"The Pacific covers about a third of Earth."],
+["M","Which river flows through Egypt?","Nile|Amazon|Danube|Ganges",0,"The Nile runs north to the Mediterranean."],
+["M","Smallest country in the world?","Monaco|Vatican City|Malta|Nauru",1,"Vatican City is about 0.44 km²."],
+["M","Longest river in South America?","Orinoco|Paraná|Amazon|Magdalena",2,"The Amazon is also the largest by volume."],
+["H","Which country has the most time zones (with territories)?","Russia|USA|France|China",2,"France has 12 thanks to overseas territories."],
+["H","Capital of Australia?","Sydney|Melbourne|Canberra|Perth",2,"Canberra was purpose-built as the capital."]]);
+add("History",[
+["E","First President of the USA?","Lincoln|Jefferson|George Washington|Adams",2,"He served 1789–1797."],
+["E","Who built the pyramids of Giza?","Romans|Greeks|Egyptians|Persians",2,"Ancient Egyptians, c. 2500 BC."],
+["M","World War II ended in?","1943|1945|1947|1950",1,"1945."],
+["M","Father of the Indian Nation?","Nehru|Patel|Bose|Mahatma Gandhi",3,"Gandhi led the non-violent independence movement."],
+["M","Who painted the Mona Lisa?","Michelangelo|Raphael|Leonardo da Vinci|Van Gogh",2,"Painted in the early 1500s."],
+["H","Machu Picchu was built by which civilization?","Aztec|Maya|Inca|Olmec",2,"The Inca, in the 15th century."],
+["H","The Berlin Wall fell in?","1979|1985|1989|1991",2,"November 1989."]]);
+add("Sports",[
+["E","Players per football (soccer) team on the pitch?","9|10|11|12",2,"Eleven including the goalkeeper."],
+["E","Wimbledon is a tournament in which sport?","Tennis|Golf|Cricket|Rugby",0,"It's the oldest Grand Slam."],
+["M","The Olympics are held every?","2 years|3 years|4 years|5 years",2,"Summer Games every four years."],
+["M","Which country won the 2018 FIFA World Cup?","Brazil|France|Germany|Croatia",1,"France beat Croatia 4–2."],
+["M","Perfect score in ten-pin bowling?","200|250|300|350",2,"Twelve strikes in a row."],
+["H","Marathon distance (km)?","36.2|42.2|45.0|40.0",1,"42.195 km."],
+["H","Where were the first modern Olympics (1896)?","Greece|France|USA|UK",0,"Athens, Greece."]]);
+add("General",[
+["E","Days in a leap year?","365|366|364|367",1,"February gets a 29th day."],
+["E","7 × 8 = ?","54|56|58|64",1,"56."],
+["E","Sharks are mammals.","True|False",1,"Sharks are fish."],
+["M","Square root of 144?","10|11|12|14",2,"12 × 12 = 144."],
+["M","Largest mammal?","Elephant|Blue whale|Giraffe|Hippo",1,"Blue whales reach ~30 m."],
+["M","The Great Wall of China is visible from space with the naked eye.","True|False",1,"A popular myth."],
+["H","Roman numeral for 500?","L|C|D|M",2,"D = 500."],
+["H","Hexadecimal FF equals what in decimal?","155|255|256|127",1,"15×16 + 15 = 255."]]);
+
+const $=i=>document.getElementById(i),LS={get(k,d){try{return JSON.parse(localStorage[k])??d}catch(e){return d}},set(k,v){try{localStorage[k]=JSON.stringify(v)}catch(e){}}};
+const rng=s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const shuffle=(a,r=Math.random)=>{a=[...a];for(let i=a.length;--i>0;){const j=r()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const show=id=>["home","quiz","result","stats","admin"].forEach(s=>$(s).classList.toggle("hide",s!==id));
+const allQ=()=>B.concat(LS.get("qz_custom",[]));
+const pool=()=>{const m=$("mode").value,w=LS.get("qz_wrong",[]);return allQ().filter(q=>m==="practice"?w.includes(q.q):(!$("cat").value||q.c===$("cat").value)&&(!$("diff").value||q.d===$("diff").value))};
+const BG=[["🎯","Perfect","100% on 5+ questions",(s,g,x)=>x.pct==100&&x.n>=5],["⚡","Speedster","Avg under 6s (5+ Qs)",(s,g,x)=>x.n>=5&&x.avg<6],["🔥","On Fire","5 correct in a row",s=>s.best>=5],["🎮","Veteran","Play 10 games",(s,g)=>g.g>=10],["🎓","Scholar","50 correct answers total",(s,g)=>g.r>=50],["📅","Daily Player","Finish a daily challenge",s=>s.mode=="daily"]];
+
+// theme + sound
+const R=document.documentElement;R.dataset.theme=LS.get("qz_theme",matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");
+$("thB").onclick=()=>{R.dataset.theme=R.dataset.theme=="dark"?"light":"dark";LS.set("qz_theme",R.dataset.theme)};
+let snd=LS.get("qz_snd",true);$("snB").textContent=snd?"🔊":"🔇";
+$("snB").onclick=()=>{snd=!snd;LS.set("qz_snd",snd);$("snB").textContent=snd?"🔊":"🔇"};
+function beep(f,d){if(!snd)return;try{const c=beep.c||(beep.c=new AudioContext()),o=c.createOscillator(),g=c.createGain();o.frequency.value=f;g.gain.value=.08;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d)}catch(e){}}
+
+// home
+function home(){
+ const cur=$("cat").value,cs=[...new Set(allQ().map(q=>q.c))],m=$("mode").value;
+ $("cat").innerHTML='<option value="">All categories</option>'+cs.map(c=>`<option>${esc(c)}</option>`).join("");$("cat").value=cur;
+ $("name").value=$("name").value||LS.get("qz_name","");$("flt").classList.toggle("hide",m==="daily");
+ $("avail").textContent=m==="daily"?"Same 10 questions for everyone today. New set tomorrow!":m==="practice"?`${pool().length} saved mistake(s) to practice`:`${pool().length} questions match`;
+ const lb=LS.get("qz_lb",[]);
+ $("lb").innerHTML=lb.length?"<tr><th>#</th><th>Name</th><th>Score</th><th>%</th><th>Date</th></tr>"+lb.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.n)}</td><td>${r.s}</td><td>${r.p}%</td><td>${r.d}</td></tr>`).join(""):'<tr><td class="c">No scores yet!</td></tr>';
+}
+["mode","cat","diff"].forEach(i=>$(i).onchange=home);
+
+// quiz
+let S,tm;
+$("start").onclick=()=>{
+ const m=$("mode").value;let p=pool(),r=Math.random;
+ if(m==="daily"){const d=new Date().toISOString().slice(0,10);r=rng([...d].reduce((a,c)=>a*31+c.charCodeAt(0)|0,7));p=B}
+ if(!p.length)return alert(m==="practice"?"No saved mistakes yet. Play a game first!":"No questions match your filters.");
+ const name=$("name").value.trim()||"Player";LS.set("qz_name",name);
+ const qs=shuffle(p,r).slice(0,m==="daily"?10:+$("count").value).map(q=>{const ix=shuffle(q.o.map((_,i)=>i),r);return{...q,o:ix.map(i=>q.o[i]),a:ix.indexOf(q.a)}});
+ S={name,mode:m,qs,i:0,score:0,st:0,best:0,right:0,secs:[],log:[],lim:m==="daily"?20:+$("time").value,lock:0,f:1,s:1,cats:{}};
+ show("quiz");ask();
+};
+function ask(){
+ const q=S.qs[S.i];S.lock=0;S.t0=Date.now();clearInterval(tm);
+ $("prog").textContent=`Q ${S.i+1}/${S.qs.length}`;$("score").textContent=`⭐ ${S.score}`;$("strk").textContent=S.st>1?`🔥 ${S.st}`:"";
+ $("pb").style.width=S.i/S.qs.length*100+"%";$("qt").textContent=q.q;$("exp").innerHTML="";$("next").classList.add("hide");
+ $("opts").innerHTML=q.o.map((o,i)=>`<button class="opt" data-i="${i}"><kbd>${i+1}</kbd>${esc(o)}</button>`).join("");
+ [...$("opts").children].forEach(b=>b.onclick=()=>answer(+b.dataset.i));
+ $("f5").disabled=!S.f||q.o.length<3;$("sk").disabled=!S.s;
+ const t=$("tb").firstElementChild;t.style.transition="none";t.style.width="100%";t.style.background="var(--ok)";$("tb").classList.toggle("hide",!S.lim);
+ if(S.lim){let l=S.lim;setTimeout(()=>{t.style.transition="width 1s linear";t.style.width=(l-1)/S.lim*100+"%"},30);
+  tm=setInterval(()=>{l--;t.style.width=Math.max(l-1,0)/S.lim*100+"%";if(l<=5)t.style.background="var(--bad)";if(l<=0)answer(-1)},1000)}
+}
+function answer(i){
+ if(S.lock)return;S.lock=1;clearInterval(tm);
+ const q=S.qs[S.i],sec=(Date.now()-S.t0)/1000,ok=i===q.a,c=S.cats[q.c]||(S.cats[q.c]=[0,0]),w=LS.get("qz_wrong",[]).filter(x=>x!==q.q);
+ S.secs.push(sec);c[1]++;
+ if(ok){S.right++;c[0]++;S.st++;S.best=Math.max(S.best,S.st);S.score+=10+(S.lim?Math.max(0,Math.round(10*(1-sec/S.lim))):0)+(S.st>=3?5:0)}else{S.st=0;w.push(q.q)}
+ LS.set("qz_wrong",w);beep(ok?660:200,.2);
+ S.log.push({q:q.q,your:i<0?"(time up)":q.o[i],right:q.o[q.a],ok});
+ [...$("opts").children].forEach((b,k)=>{b.disabled=true;if(k===q.a)b.classList.add("ok");else if(k===i)b.classList.add("bad")});
+ $("f5").disabled=$("sk").disabled=true;
+ $("exp").innerHTML=`<div class="exp">${i<0?"⏰ Time's up! ":ok?"✅ Correct! ":"❌ Wrong. "}${esc(q.e||"")}</div>`;
+ $("score").textContent=`⭐ ${S.score}`;$("next").textContent=S.i+1<S.qs.length?"Next →":"See results";$("next").classList.remove("hide");$("next").focus();
+}
+const nextQ=()=>{S.i++;S.i<S.qs.length?ask():finish()};
+$("next").onclick=nextQ;
+$("sk").onclick=()=>{if(S.lock||!S.s)return;S.s=0;clearInterval(tm);const q=S.qs[S.i];S.log.push({q:q.q,your:"(skipped)",right:q.o[q.a],ok:0,sk:1});nextQ()};
+$("f5").onclick=()=>{if(S.lock||!S.f)return;S.f=0;const q=S.qs[S.i];shuffle(q.o.map((_,i)=>i).filter(i=>i!==q.a)).slice(0,q.o.length-2).forEach(i=>$("opts").children[i].classList.add("hide"));$("f5").disabled=true};
+document.addEventListener("keydown",e=>{
+ if($("quiz").classList.contains("hide"))return;
+ if(/^[1-9]$/.test(e.key)&&!S.lock&&S.qs[S.i].o[+e.key-1]!==undefined)answer(+e.key-1);
+ else if(e.key==="Enter"&&S.lock)nextQ();
+});
+
+// result
+function finish(){
+ const L=S.log.filter(x=>!x.sk),n=L.length,pct=n?Math.round(S.right/n*100):0,avg=S.secs.length?S.secs.reduce((a,b)=>a+b,0)/S.secs.length:0;
+ show("result");$("pb").style.width="100%";
+ $("rs").textContent=S.score+" pts";
+ $("rm").textContent=(pct>=90?"🏆 Outstanding!":pct>=70?"🎉 Great job!":pct>=50?"👍 Not bad!":"📚 Keep practicing!")+` ${pct}% correct.`;
+ $("rc").textContent=S.right;$("rw").textContent=n-S.right;$("rb").textContent=S.best;$("ra").textContent=avg.toFixed(1);
+ $("review").innerHTML=S.log.map((r,i)=>`<div class="rv"><b>${i+1}. ${esc(r.q)}</b><br>${r.ok?"✅":r.sk?"⏭":"❌"} ${esc(r.your)}${r.ok?"":` — Correct: <b>${esc(r.right)}</b>`}</div>`).join("");
+ if(S.mode!=="practice"){const lb=LS.get("qz_lb",[]);lb.push({n:S.name,s:S.score,p:pct,d:new Date().toLocaleDateString()});lb.sort((a,b)=>b.s-a.s);LS.set("qz_lb",lb.slice(0,10))}
+ const g=LS.get("qz_stats",{g:0,r:0,t:0,c:{},b:[]});g.g++;g.r+=S.right;g.t+=n;
+ for(const k in S.cats){const c=g.c[k]||(g.c[k]=[0,0]);c[0]+=S.cats[k][0];c[1]+=S.cats[k][1]}
+ const nw=BG.filter(b=>!g.b.includes(b[1])&&b[3](S,g,{pct,n,avg}));g.b.push(...nw.map(b=>b[1]));LS.set("qz_stats",g);
+ $("rbdg").innerHTML=nw.map(b=>`<span class="bdg">${b[0]} New badge: ${b[1]}</span>`).join("");
+}
+$("again").onclick=()=>$("start").click();
+$("h2").onclick=()=>{show("home");home()};
+$("cp").onclick=()=>{const t=`I scored ${S.score} pts (${S.right}/${S.log.length}) on QuizMaster Pro! 🧠`;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>alert("Copied!"),()=>prompt("Copy this:",t))};
+
+// stats
+$("stB").onclick=()=>{
+ const g=LS.get("qz_stats",{g:0,r:0,t:0,c:{},b:[]});show("stats");
+ $("sbody").innerHTML=`<div class="st" style="margin-top:12px"><div><b>${g.g}</b>Games</div><div><b>${g.r}</b>Correct</div><div><b>${g.t?Math.round(g.r/g.t*100):0}%</b>Accuracy</div></div><h4>By category</h4>`
+ +(Object.keys(g.c).map(k=>{const p=Math.round(g.c[k][0]/g.c[k][1]*100);return`<div>${esc(k)}: ${p}%<div class="bar"><i style="width:${p}%"></i></div></div>`}).join("")||'<p class="c">Play a game to see stats.</p>')
+ +"<h4>Badges</h4>"+BG.map(b=>`<span class="bdg ${g.b.includes(b[1])?"":"off"}" title="${b[2]}">${b[0]} ${b[1]}</span>`).join("");
+};
+$("sBack").onclick=()=>{show("home");home()};
+$("sRes").onclick=()=>{if(confirm("Reset all stats and badges?")){LS.set("qz_stats",{g:0,r:0,t:0,c:{},b:[]});LS.set("qz_wrong",[]);$("stB").click()}};
+
+// admin
+$("aopts").innerHTML=[0,1,2,3].map(i=>`<div class="row" style="margin-bottom:6px"><input type="radio" name="ar" value="${i}" style="flex:none;width:auto" ${i?"":"checked"}><input class="ao" placeholder="Option ${i+1}"></div>`).join("");
+$("adB").onclick=()=>{show("admin");$("cc").textContent=LS.get("qz_custom",[]).length};
+$("aBack").onclick=()=>{show("home");home()};
+$("aadd").onclick=()=>{
+ const o=[...document.querySelectorAll(".ao")].map(x=>x.value.trim()),q=$("aq").value.trim();
+ if(!q||o.some(x=>!x))return alert("Fill in the question and all 4 options.");
+ const c=LS.get("qz_custom",[]);c.push({c:$("acat").value.trim()||"Custom",d:$("adiff").value,q,o,a:+document.querySelector("[name=ar]:checked").value,e:$("aexp").value.trim()});
+ LS.set("qz_custom",c);$("cc").textContent=c.length;$("aq").value=$("aexp").value="";document.querySelectorAll(".ao").forEach(x=>x.value="");alert("Added!");
+};
+$("ex").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(LS.get("qz_custom",[]),null,2)],{type:"application/json"}));a.download="my-questions.json";a.click()};
+$("clc").onclick=()=>{if(confirm("Delete all custom questions?")){LS.set("qz_custom",[]);$("cc").textContent=0}};
+$("cll").onclick=()=>{if(confirm("Clear the leaderboard?"))LS.set("qz_lb",[])};
+home();
+</script></body></html>
